@@ -2,16 +2,15 @@
 
   var rootStyle = {
     position: "relative",
-    width: 200,
+    width: 400,
     paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: "yellow"
+    paddingBottom: 10
   };
   
   var sliderStyle = {
     width: "100%",
-    backgroundColor: "black",
-    height: 10
+    backgroundColor: "gray",
+    height: 2
   };
   
   var thumbStyle = {
@@ -36,47 +35,68 @@
   };
 
   win.Slider = React.createClass({
+    onBodyMouseMove : function(e) {
+      this.onMouseMove(e);
+    },
+    getInitialState : function() {
+      return {value : parseFloat(this.props.value), nativeSlider : true}
+    },
+    componentWillReceiveProps : function(nextProps) {
+      this.setState({
+        value : nextProps.value ? parseFloat(nextProps.value) : 0
+      });
+    },
+    onBodyMouseUp : function(e) {
+      this.onMouseUp(e);
+      win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
+      win.document.body.removeEventListener("mouseup", this.onBodyMouseUp);
+    },
+    getDefaultProps : function() {
+      return {
+        min : 0,
+        max : 10
+      }
+    },
     componentWillMount : function() {
       var el = document.createElement("input");
       el.setAttribute("type", "range");
       this.setState({nativeSlider : el.type === "raunge"});
     },
     componentDidMount : function() {
-      offsetLeft = this.refs.sliderRoot.offsetLeft + (this.refs.sliderThumb.clientWidth / 2);
-      offsetWidth = this.refs.sliderRoot.clientWidth;
-      console.log(offsetLeft + " en " + offsetWidth);
+      offsetLeft = parseFloat(this.refs.sliderRoot.offsetLeft + (this.refs.sliderThumb.clientWidth / 2));
+      offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth);
+      this.setState({
+        value : this.state.value
+      });
     },
     onChange : function(e) {
       this.setState({
-        value : e.target.value
+        value : parseFloat(e.target.value)
       });
     },
     onMouseDown : function(e) {
       var x = e.clientX - offsetLeft;
       this.setState({
         started : true,
-        x : x,
-        value : (x / offsetWidth) * 10
+        value : (x / offsetWidth) * (this.props.max - this.props.min) + parseInt(this.props.min)
       });
+      win.document.body.addEventListener("mousemove", this.onBodyMouseMove);
+      win.document.body.addEventListener("mouseup", this.onBodyMouseUp);
     },
     onMouseMove : function(e) {
       if (this.state.started) {
         var x = e.clientX - offsetLeft;
-        if (e.clientX - offsetLeft > 200) {
+        if (e.clientX - offsetLeft > offsetWidth) {
           this.setState({
-            x : 200,
-            value : 10
+            value : this.props.max
           });
         } else if (e.clientX - offsetLeft < 0) {
           this.setState({
-            x : 0,
-            value : 0
+            value : this.props.min
           });
         } else {
-          // TODO: value
           this.setState({
-            x : x,
-            value : (x / offsetWidth) * 10
+            value : (x / offsetWidth) * (this.props.max - this.props.min) + parseInt(this.props.min)
           });
         }
       }
@@ -89,29 +109,54 @@
         console.log(this.state.value + " is value");
       }
     },
+    onKeyDown : function(e) {
+      var newValue = parseInt(this.state.value);
+      console.log(newValue);
+      switch (e.keyCode) {
+        case 37:
+          newValue -= (this.props.step || 1);
+          if (newValue < parseInt(this.props.min)) {
+            newValue = this.props.min;
+          }
+          break;
+        case 39:
+          newValue += (this.props.step || 1);
+          if (newValue > parseInt(this.props.max)) {
+            newValue = this.props.max;
+          }
+          break;
+      }
+      if (newValue !== null) {
+        this.setState({
+          value : newValue
+        });
+      }
+    },
     render : function() {
       if (this.state.nativeSlider) {
         return (
           <div>
             <input
               type="range"
-              min={this.props.min || 0}
-              max={this.props.max || 10}
+              min={this.props.min}
+              max={this.props.max}
               value={this.state.value || 0}
               onChange={this.onChange} />
           </div>
         );
       } else {
         var currentThumbStyle = simpleClone(thumbStyle);
-        currentThumbStyle.left = this.state.x;
+        var x = (this.state.value - this.props.min) / (this.props.max - this.props.min) * offsetWidth;
+        currentThumbStyle.left = x;
+        var me = this;
         return (
           <div style={rootStyle}
             ref="sliderRoot"
-            onMouseDown={this.onMouseDown}
-            onMouseUp={this.onMouseUp}
-            onMouseMove={this.onMouseMove}>
+            onMouseDown={this.onMouseDown}>
             <div style={sliderStyle}>
               <button
+                autoFocus={true}
+                onKeyDown={this.onKeyDown}
                 ref="sliderThumb"
                 style={currentThumbStyle}
                 value={this.state.value} />
@@ -121,7 +166,27 @@
       }
     }
   });
+  
+  win.App = React.createClass({
+    getInitialState : function() {
+      return {value : 70}
+    },
+    onClick : function() {
+      this.setState({
+        value : 90
+      });
+    },
+    render : function() {
+      var style = {padding:20};
+      return (
+        <div style={style}>
+          <Slider min={50} max={100} step={10} value={this.state.value} />
+          <button onClick={this.onClick}>OK</button>
+        </div>
+      );
+    }
+  });
 
 }(window));
 
-ReactDOM.render(<Slider />, document.getElementById("app"));
+ReactDOM.render(<App />, document.getElementById("app"));
