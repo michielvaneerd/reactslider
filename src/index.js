@@ -10,14 +10,17 @@
       });
     },
     onSliderChange : function(value) {
-      console.log(value);
+      this.setState({
+        value : value
+      });
     },
     render : function() {
       var style = {padding:20};
       return (
         <div style={style}>
           <ReactSlider nativeSlider={false} min={50} max={100} step={1} value={this.state.value} onChange={this.onSliderChange} />
-          <button onClick={this.onClick}>OK</button>
+          <p>{this.state.value}</p>
+          <p><button onClick={this.onClick}>OK</button></p>
         </div>
       );
     }

@@ -12,7 +12,9 @@
       });
     },
     onSliderChange: function (value) {
-      console.log(value);
+      this.setState({
+        value: value
+      });
     },
     render: function () {
       var style = { padding: 20 };
@@ -21,9 +23,18 @@
         { style: style },
         React.createElement(ReactSlider, { nativeSlider: false, min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange }),
         React.createElement(
-          "button",
-          { onClick: this.onClick },
-          "OK"
+          "p",
+          null,
+          this.state.value
+        ),
+        React.createElement(
+          "p",
+          null,
+          React.createElement(
+            "button",
+            { onClick: this.onClick },
+            "OK"
+          )
         )
       );
     }

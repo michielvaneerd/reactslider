@@ -74,7 +74,7 @@
     },
     componentDidMount: function () {
       if (!this.state.nativeSlider) {
-
+        offsetLeft = 0;
         var parent = this.refs.sliderRoot;
         while (parent) {
           offsetLeft += parent.offsetLeft;
@@ -89,27 +89,24 @@
         value: this.state.value
       });
     },
-    onChange: function (e) {
-      this.setState({
-        value: e.target.value
-      });
-      this.fireOnChange(e.target.value);
+    onNativeSliderChange: function (e) {
+      this.handleChange(e.target.value);
     },
     onMouseDown: function (e) {
+      var newValue = this.getNewValue(e.clientX);
       this.setState({
         started: true,
-        value: this.getNewValue(e.clientX)
+        value: newValue
       });
+      this.fireOnChange(newValue);
       win.document.body.addEventListener("mousemove", this.onBodyMouseMove);
       win.document.body.addEventListener("mouseup", this.onBodyMouseUp);
     },
-    handleChange: function (newValue, suppressFire) {
+    handleChange: function (newValue) {
       this.setState({
         value: newValue
       });
-      if (!suppressFire) {
-        this.fireOnChange(newValue);
-      }
+      this.fireOnChange(newValue);
     },
     getNewValue: function (clientX) {
 
@@ -197,7 +194,7 @@
             max: this.props.max,
             step: this.props.step,
             value: this.state.value,
-            onChange: this.onChange })
+            onChange: this.onNativeSliderChange })
         );
       } else {
         var currentThumbStyle = simpleClone(thumbStyle);
