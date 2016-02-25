@@ -25,7 +25,8 @@
   
   var offsetLeft = 0;
   var offsetWidth = 0;
-  
+  var halfStep = 0; 
+ 
   var simpleClone = function(ob) {
     var c = {};
     for (var key in ob) {
@@ -54,18 +55,20 @@
     getDefaultProps : function() {
       return {
         min : 0,
-        max : 10
+        max : 10,
+        step : 1
       }
     },
     componentWillMount : function() {
       var el = document.createElement("input");
       el.setAttribute("type", "range");
-      this.setState({nativeSlider : el.type === "range"});
+      this.setState({nativeSlider : el.type === "ange"});
     },
     componentDidMount : function() {
       if (!this.state.nativeSlider) {
         offsetLeft = parseFloat(this.refs.sliderRoot.offsetLeft + (this.refs.sliderThumb.clientWidth / 2));
         offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth);
+        halfStep = Math.round(this.props.step / 2);
       }
       this.setState({
         value : this.state.value
@@ -86,21 +89,51 @@
       win.document.body.addEventListener("mousemove", this.onBodyMouseMove);
       win.document.body.addEventListener("mouseup", this.onBodyMouseUp);
     },
+    handleChange : function(newValue, suppressFire) {
+      this.setState({
+        value : newValue
+      });
+      if (!suppressFire) {
+        this.fireOnChange(newValue);
+      }
+    },
     onMouseMove : function(e) {
       if (this.state.started) {
         var x = e.clientX - offsetLeft;
-        var newValue = this.state.value;
+        var oldValue = this.state.value;
         if (e.clientX - offsetLeft > offsetWidth) {
-          newValue = this.props.max;
+          return this.handleChange(this.props.max);
         } else if (e.clientX - offsetLeft < 0) {
-          newValue = this.props.min;
+          return this.handleChange(this.props.min);
         } else {
-          newValue = (x / offsetWidth) * (this.props.max - this.props.min) + parseInt(this.props.min);
+          var newValue = Math.round((x / offsetWidth) * (this.props.max - this.props.min)
+            + this.props.min);
+
+          if (newValue == oldValue) {
+            return;
+          }
+
+          if (this.props.step == 1) {
+            return this.handleChange(newValue);
+          }
+
+          if (newValue < oldValue && oldValue - newValue > halfStep) {
+            newValue = oldValue - this.props.step;
+            if (newValue < this.props.min) {
+              return this.handleChange(this.props.min);
+            }
+            return this.handleChange(newValue);
+          }
+
+          if (newValue > oldValue && newValue - oldValue > halfStep) {
+            newValue = oldValue + this.props.step;
+            if (newValue > this.props.max) {
+              return this.handleChange(this.props.max);
+            }
+            return this.handleChange(newValue);
+          }
+
         }
-        this.setState({
-          value : Math.round(newValue)
-        });
-        this.fireOnChange(Math.round(newValue));
       }
     },
     fireOnChange : function(value) {
@@ -119,13 +152,13 @@
       var newValue = this.state.value;
       switch (e.keyCode) {
         case 37:
-          newValue -= (this.props.step || 1);
+          newValue -= this.props.step;
           if (newValue < this.props.min) {
             newValue = this.props.min;
           }
           break;
         case 39:
-          newValue += (this.props.step || 1);
+          newValue += this.props.step;
           if (newValue > this.props.max) {
             newValue = this.props.max;
           }
@@ -147,6 +180,7 @@
               type="range"
               min={this.props.min}
               max={this.props.max}
+              step={this.props.step}
               value={this.state.value}
               onChange={this.onChange} />
           </div>

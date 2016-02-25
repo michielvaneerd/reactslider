@@ -16,7 +16,7 @@
       var style = {padding:20};
       return (
         <div style={style}>
-          <Slider min={50} max={100} step={10} value={this.state.value} onChange={this.onSliderChange} />
+          <Slider min={50} max={100} step={1} value={this.state.value} onChange={this.onSliderChange} />
           <button onClick={this.onClick}>OK</button>
         </div>
       );
