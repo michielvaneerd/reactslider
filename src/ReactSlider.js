@@ -3,14 +3,13 @@
   var rootStyle = {
     position: "relative",
     minWidth: 50,
-    minHeight: 10, // does not work with table-cell display...
-    display: "table-cell",
-    verticalAlign: "middle"
+    minHeight: 10
   };
   
   var sliderStyle = {
     width: "100%",
-    minHeight: 1
+    minHeight: 1,
+    position: "absolute"
   };
   
   var thumbStyle = {
@@ -25,7 +24,7 @@
   
   var offsetLeft = 0;
   var offsetWidth = 0;
-  var halfStep = 0; 
+  var halfStep = 0;
  
   var simpleClone = function(ob) {
     var c = {};
@@ -35,7 +34,7 @@
     return c;
   };
 
-  win.Slider = React.createClass({
+  win.ReactSlider = React.createClass({
     onBodyMouseMove : function(e) {
       this.onMouseMove(e);
     },
@@ -67,6 +66,10 @@
         this.setState({nativeSlider : el.type === "range"});
       }
     },
+    componentWillUnmount : function() {
+      win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
+      win.document.body.removeEventListener("mouseup", this.onBodyMouseUp);
+    },
     componentDidMount : function() {
       if (!this.state.nativeSlider) {
         
@@ -78,6 +81,8 @@
         offsetLeft += this.refs.sliderThumb.clientWidth / 2;
         offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth - this.refs.sliderThumb.clientWidth);
         halfStep = Math.round(this.props.step / 2);
+        this.refs.sliderLine.style.top = parseFloat((this.refs.sliderRoot.clientHeight / 2) - (this.refs.sliderLine.clientHeight / 2))
+          + "px";
       }
       this.setState({
         value : this.state.value
@@ -151,7 +156,7 @@
     },
     fireOnChange : function(value) {
       if (this.props.onChange) {
-        this.props.onChange(value || this.state.value);
+        this.props.onChange(value);
       }
     },
     onMouseUp : function(e) {
@@ -204,7 +209,7 @@
           <div className="react-slider-root" style={rootStyle}
             ref="sliderRoot"
             onMouseDown={this.onMouseDown}>
-            <div className="react-slider-line" style={sliderStyle} />
+            <div ref="sliderLine" className="react-slider-line" style={sliderStyle} />
             <button
                 className="react-slider-thumb"
                 autoFocus={true}
