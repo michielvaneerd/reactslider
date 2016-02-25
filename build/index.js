@@ -19,7 +19,7 @@
       return React.createElement(
         "div",
         { style: style },
-        React.createElement(Slider, { min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange }),
+        React.createElement(Slider, { nativeSlider: false, min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange }),
         React.createElement(
           "button",
           { onClick: this.onClick },

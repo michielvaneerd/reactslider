@@ -37,7 +37,7 @@
       this.onMouseMove(e);
     },
     getInitialState : function() {
-      return {value : parseInt(this.props.value), nativeSlider : true}
+      return {value : parseInt(this.props.value), nativeSlider : this.props.nativeSlider}
     },
     componentWillReceiveProps : function(nextProps) {
       this.setState({
@@ -53,13 +53,16 @@
       return {
         min : 0,
         max : 10,
-        step : 1
+        step : 1,
+        nativeSlider : true
       }
     },
     componentWillMount : function() {
-      var el = document.createElement("input");
-      el.setAttribute("type", "range");
-      this.setState({nativeSlider : el.type === "ange"});
+      if (this.props.nativeSlider) {
+        var el = document.createElement("input");
+        el.setAttribute("type", "range");
+        this.setState({nativeSlider : el.type === "range"});
+      }
     },
     componentDidMount : function() {
       if (!this.state.nativeSlider) {
@@ -173,7 +176,7 @@
         return (
           <div>
             <input
-              id="react-slider-root"
+              className="react-slider-root"
               type="range"
               min={this.props.min}
               max={this.props.max}
