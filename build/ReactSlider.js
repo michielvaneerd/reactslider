@@ -3,12 +3,14 @@
   var rootStyle = {
     position: "relative",
     minWidth: 50,
-    paddingTop: 10,
-    paddingBottom: 10
+    minHeight: 10, // does not work with table-cell display...
+    display: "table-cell",
+    verticalAlign: "middle"
   };
 
   var sliderStyle = {
-    width: "100%"
+    width: "100%",
+    minHeight: 1
   };
 
   var thumbStyle = {
@@ -17,7 +19,8 @@
     top: 0,
     left: 0,
     border: "none",
-    padding: 0
+    padding: 0,
+    minWidth: 10
   };
 
   var offsetLeft = 0;
@@ -75,7 +78,7 @@
           parent = parent.offsetParent;
         }
         offsetLeft += this.refs.sliderThumb.clientWidth / 2;
-        offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth);
+        offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth - this.refs.sliderThumb.clientWidth);
         halfStep = Math.round(this.props.step / 2);
       }
       this.setState({
@@ -89,10 +92,9 @@
       this.fireOnChange(e.target.value);
     },
     onMouseDown: function (e) {
-      var x = e.clientX - offsetLeft;
       this.setState({
         started: true,
-        value: Math.round(x / offsetWidth * (this.props.max - this.props.min) + parseInt(this.props.min))
+        value: this.getNewValue(e.clientX)
       });
       win.document.body.addEventListener("mousemove", this.onBodyMouseMove);
       win.document.body.addEventListener("mouseup", this.onBodyMouseUp);
@@ -105,41 +107,46 @@
         this.fireOnChange(newValue);
       }
     },
+    getNewValue: function (clientX) {
+
+      var x = clientX - offsetLeft;
+
+      if (x > offsetWidth) {
+        return this.props.max;
+      }
+
+      if (x < 0) {
+        return this.props.min;
+      }
+
+      var oldValue = this.state.value;
+      var newValue = Math.round(x / offsetWidth * (this.props.max - this.props.min) + this.props.min);
+
+      if (newValue == oldValue || this.props.step == 1) {
+        return newValue;
+      }
+
+      if (newValue < oldValue && oldValue - newValue > halfStep) {
+        newValue = oldValue - this.props.step;
+        if (newValue < this.props.min) {
+          return this.props.min;
+        }
+        return newValue;
+      }
+
+      if (newValue > oldValue && newValue - oldValue > halfStep) {
+        newValue = oldValue + this.props.step;
+        if (newValue > this.props.max) {
+          return this.props.max;
+        }
+        return newValue;
+      }
+
+      return newValue;
+    },
     onMouseMove: function (e) {
       if (this.state.started) {
-        var x = e.clientX - offsetLeft;
-        var oldValue = this.state.value;
-        if (e.clientX - offsetLeft > offsetWidth) {
-          return this.handleChange(this.props.max);
-        } else if (e.clientX - offsetLeft < 0) {
-          return this.handleChange(this.props.min);
-        } else {
-          var newValue = Math.round(x / offsetWidth * (this.props.max - this.props.min) + this.props.min);
-
-          if (newValue == oldValue) {
-            return;
-          }
-
-          if (this.props.step == 1) {
-            return this.handleChange(newValue);
-          }
-
-          if (newValue < oldValue && oldValue - newValue > halfStep) {
-            newValue = oldValue - this.props.step;
-            if (newValue < this.props.min) {
-              return this.handleChange(this.props.min);
-            }
-            return this.handleChange(newValue);
-          }
-
-          if (newValue > oldValue && newValue - oldValue > halfStep) {
-            newValue = oldValue + this.props.step;
-            if (newValue > this.props.max) {
-              return this.handleChange(this.props.max);
-            }
-            return this.handleChange(newValue);
-          }
-        }
+        this.handleChange(this.getNewValue(e.clientX));
       }
     },
     fireOnChange: function (value) {
@@ -170,11 +177,8 @@
           }
           break;
       }
-      if (newValue !== null) {
-        this.setState({
-          value: Math.round(newValue)
-        });
-        this.fireOnChange(Math.round(newValue));
+      if (newValue != this.state.value) {
+        this.handleChange(Math.round(newValue));
       }
     },
     render: function () {
@@ -201,17 +205,14 @@
           { className: "react-slider-root", style: rootStyle,
             ref: "sliderRoot",
             onMouseDown: this.onMouseDown },
-          React.createElement(
-            "div",
-            { className: "react-slider-line", style: sliderStyle },
-            React.createElement("button", {
-              className: "react-slider-thumb",
-              autoFocus: true,
-              onKeyDown: this.onKeyDown,
-              ref: "sliderThumb",
-              style: currentThumbStyle,
-              value: this.state.value })
-          )
+          React.createElement("div", { className: "react-slider-line", style: sliderStyle }),
+          React.createElement("button", {
+            className: "react-slider-thumb",
+            autoFocus: true,
+            onKeyDown: this.onKeyDown,
+            ref: "sliderThumb",
+            style: currentThumbStyle,
+            value: this.state.value })
         );
       }
     }
