@@ -68,7 +68,13 @@
     },
     componentDidMount: function () {
       if (!this.state.nativeSlider) {
-        offsetLeft = parseFloat(this.refs.sliderRoot.offsetLeft + this.refs.sliderThumb.clientWidth / 2);
+
+        var parent = this.refs.sliderRoot;
+        while (parent) {
+          offsetLeft += parent.offsetLeft;
+          parent = parent.offsetParent;
+        }
+        offsetLeft += this.refs.sliderThumb.clientWidth / 2;
         offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth);
         halfStep = Math.round(this.props.step / 2);
       }
