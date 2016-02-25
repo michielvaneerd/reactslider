@@ -9,13 +9,10 @@
   
   var sliderStyle = {
     width: "100%",
-    backgroundColor: "gray",
-    height: 2
   };
   
   var thumbStyle = {
     position: "absolute",
-    width: 10,
     height: "100%",
     top: 0,
     left: 0,
@@ -191,12 +188,12 @@
         currentThumbStyle.left = x;
         var me = this;
         return (
-          <div id="react-slider-root" style={rootStyle}
+          <div className="react-slider-root" style={rootStyle}
             ref="sliderRoot"
             onMouseDown={this.onMouseDown}>
-            <div style={sliderStyle}>
+            <div className="react-slider-line" style={sliderStyle}>
               <button
-                id="react-slider-thumb"
+                className="react-slider-thumb"
                 autoFocus={true}
                 onKeyDown={this.onKeyDown}
                 ref="sliderThumb"

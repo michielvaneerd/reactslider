@@ -8,14 +8,11 @@
   };
 
   var sliderStyle = {
-    width: "100%",
-    backgroundColor: "gray",
-    height: 2
+    width: "100%"
   };
 
   var thumbStyle = {
     position: "absolute",
-    width: 10,
     height: "100%",
     top: 0,
     left: 0,
@@ -103,7 +100,6 @@
       if (this.state.started) {
         var x = e.clientX - offsetLeft;
         var oldValue = this.state.value;
-        //var newValue = this.state.value;
         if (e.clientX - offsetLeft > offsetWidth) {
           return this.handleChange(this.props.max);
         } else if (e.clientX - offsetLeft < 0) {
@@ -193,14 +189,14 @@
         var me = this;
         return React.createElement(
           "div",
-          { id: "react-slider-root", style: rootStyle,
+          { className: "react-slider-root", style: rootStyle,
             ref: "sliderRoot",
             onMouseDown: this.onMouseDown },
           React.createElement(
             "div",
-            { style: sliderStyle },
+            { className: "react-slider-line", style: sliderStyle },
             React.createElement("button", {
-              id: "react-slider-thumb",
+              className: "react-slider-thumb",
               autoFocus: true,
               onKeyDown: this.onKeyDown,
               ref: "sliderThumb",
