@@ -3,10 +3,11 @@
   var rootStyle = {
     position: "relative",
     minWidth: 50,
-    minHeight: 10
+    minHeight: 10,
+    display: "block"
   };
 
-  var sliderStyle = {
+  var sliderLineStyle = {
     width: "100%",
     minHeight: 1,
     position: "absolute"
@@ -14,22 +15,22 @@
 
   var thumbStyle = {
     position: "absolute",
-    height: "100%",
-    top: 0,
-    left: 0,
-    border: "none",
-    padding: 0,
+    minHeight: 10,
     minWidth: 10
   };
 
-  var offsetLeft = 0;
-  var offsetWidth = 0;
-  var halfStep = 0;
+  var nativeStyle = {
+    display: "block",
+    width: "100%"
+  };
 
-  var simpleClone = function (ob) {
+  var simpleClone = function () {
     var c = {};
-    for (var key in ob) {
-      c[key] = ob[key];
+    for (var i = 0; i < arguments.length; i++) {
+      var ob = arguments[i];
+      for (var key in ob) {
+        c[key] = ob[key];
+      }
     }
     return c;
   };
@@ -37,11 +38,21 @@
   win.ReactSlider = React.createClass({
     displayName: "ReactSlider",
 
+
+    // Internal properties (computed properties):
+    sliderLineStyle: {},
+    offsetLeft: 0,
+    offsetWidth: 0,
+    halfStep: 0,
+
     onBodyMouseMove: function (e) {
       this.onMouseMove(e);
     },
     getInitialState: function () {
-      return { value: parseInt(this.props.value), nativeSlider: this.props.nativeSlider };
+      return {
+        value: parseInt(this.props.value),
+        nativeSlider: this.props.nativeSlider
+      };
     },
     componentWillReceiveProps: function (nextProps) {
       this.setState({
@@ -58,15 +69,21 @@
         min: 0,
         max: 10,
         step: 1,
-        nativeSlider: true
+        nativeSlider: true,
+        id: "",
+        className: "react-slider-root",
+        sliderLineColor: "gray"
       };
     },
     componentWillMount: function () {
       if (this.props.nativeSlider) {
+
         var el = document.createElement("input");
         el.setAttribute("type", "range");
         this.setState({ nativeSlider: el.type === "range" });
       }
+
+      this.sliderLineStyle = simpleClone(sliderLineStyle, { backgroundColor: this.props.sliderLineColor });
     },
     componentWillUnmount: function () {
       win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
@@ -74,16 +91,18 @@
     },
     componentDidMount: function () {
       if (!this.state.nativeSlider) {
-        offsetLeft = 0;
+
         var parent = this.refs.sliderRoot;
         while (parent) {
-          offsetLeft += parent.offsetLeft;
+          this.offsetLeft += parent.offsetLeft;
           parent = parent.offsetParent;
         }
-        offsetLeft += this.refs.sliderThumb.clientWidth / 2;
-        offsetWidth = parseFloat(this.refs.sliderRoot.clientWidth - this.refs.sliderThumb.clientWidth);
-        halfStep = Math.round(this.props.step / 2);
-        this.refs.sliderLine.style.top = parseFloat(this.refs.sliderRoot.clientHeight / 2 - this.refs.sliderLine.clientHeight / 2) + "px";
+        this.offsetLeft += this.refs.sliderThumb.offsetWidth / 2;
+
+        this.offsetWidth = parseFloat(this.refs.sliderRoot.offsetWidth - this.refs.sliderThumb.offsetWidth);
+        this.halfStep = Math.round(this.props.step / 2);
+        this.refs.sliderLine.style.top = parseFloat(this.refs.sliderRoot.offsetHeight / 2 - this.refs.sliderLine.offsetHeight / 2) + "px";
+        this.refs.sliderThumb.style.top = parseFloat(this.refs.sliderRoot.offsetHeight / 2 - this.refs.sliderThumb.offsetHeight / 2) + "px";
       }
       this.setState({
         value: this.state.value
@@ -110,9 +129,9 @@
     },
     getNewValue: function (clientX) {
 
-      var x = clientX - offsetLeft;
+      var x = clientX - this.offsetLeft;
 
-      if (x > offsetWidth) {
+      if (x > this.offsetWidth) {
         return this.props.max;
       }
 
@@ -121,13 +140,13 @@
       }
 
       var oldValue = this.state.value;
-      var newValue = Math.round(x / offsetWidth * (this.props.max - this.props.min) + this.props.min);
+      var newValue = Math.round(x / this.offsetWidth * (this.props.max - this.props.min) + this.props.min);
 
       if (newValue == oldValue || this.props.step == 1) {
         return newValue;
       }
 
-      if (newValue < oldValue && oldValue - newValue > halfStep) {
+      if (newValue < oldValue && oldValue - newValue > this.halfStep) {
         newValue = oldValue - this.props.step;
         if (newValue < this.props.min) {
           return this.props.min;
@@ -135,7 +154,7 @@
         return newValue;
       }
 
-      if (newValue > oldValue && newValue - oldValue > halfStep) {
+      if (newValue > oldValue && newValue - oldValue > this.halfStep) {
         newValue = oldValue + this.props.step;
         if (newValue > this.props.max) {
           return this.props.max;
@@ -188,7 +207,9 @@
           "div",
           null,
           React.createElement("input", {
-            className: "react-slider-root",
+            style: nativeStyle,
+            className: this.props.className,
+            id: this.props.id,
             type: "range",
             min: this.props.min,
             max: this.props.max,
@@ -198,15 +219,17 @@
         );
       } else {
         var currentThumbStyle = simpleClone(thumbStyle);
-        var x = (this.state.value - this.props.min) / (this.props.max - this.props.min) * offsetWidth;
+        var x = (this.state.value - this.props.min) / (this.props.max - this.props.min) * this.offsetWidth;
         currentThumbStyle.left = x;
         var me = this;
         return React.createElement(
           "div",
-          { className: "react-slider-root", style: rootStyle,
+          { className: this.props.className,
+            id: this.props.id,
+            style: rootStyle,
             ref: "sliderRoot",
             onMouseDown: this.onMouseDown },
-          React.createElement("div", { ref: "sliderLine", className: "react-slider-line", style: sliderStyle }),
+          React.createElement("div", { ref: "sliderLine", className: "react-slider-line", style: this.sliderLineStyle }),
           React.createElement("button", {
             className: "react-slider-thumb",
             autoFocus: true,
