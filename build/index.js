@@ -1,5 +1,18 @@
 (function (win) {
 
+  var labelStyle = {
+    display: "block",
+    float: "left",
+    height: 50,
+    lineHeight: "50px",
+    marginRight: 30
+  };
+
+  var floatStyle = {
+    display: "inline-block",
+    width: 140
+  };
+
   win.App = React.createClass({
     displayName: "App",
 
@@ -38,6 +51,21 @@
           "Native slider when supported"
         ),
         React.createElement(ReactSlider, { min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange }),
+        React.createElement(
+          "h4",
+          null,
+          "Slider with label and float to left"
+        ),
+        React.createElement(
+          "label",
+          { style: labelStyle, htmlFor: "floatSlider" },
+          "Float slider"
+        ),
+        React.createElement(
+          "div",
+          { style: floatStyle },
+          React.createElement(ReactSlider, { thumbId: "floatSlider", nativeSlider: false, min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange })
+        ),
         React.createElement(
           "p",
           null,

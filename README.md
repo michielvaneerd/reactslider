@@ -31,6 +31,7 @@ Modifications:
 - ````sliderLineColor="green"``` Color of slider line - this is the only style property that has to be set as a prop, everything else can be set in CSS by using the ```className``` or ```id``` properties.
 - ```min```, ```max``` and ```step``` as you would use on the native range input.
 - ```onChange``` is a callback that will be handover the value like ```function(value)```. This will be the callback for both custom and native slider. Note that this is different than the "normal" callback fired by a input range element.
+- ```thumbId="thumb-id"``` Will set id on the thumb (only for non-native slider). Usefull if you want to use a label with for attribute so you can set focus.
 
 Example of a forced custom slider:
 ```jsx

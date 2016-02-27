@@ -1,5 +1,18 @@
 (function(win) {
 
+  var labelStyle = {
+    display: "block",
+    float: "left",
+    height: 50,
+    lineHeight: "50px",
+    marginRight: 30
+  }
+
+  var floatStyle = {
+    display: "inline-block",
+    width: 140
+  };
+
   win.App = React.createClass({
     getInitialState : function() {
       return {value : 70, useNativeSlider : false}
@@ -23,6 +36,11 @@
           <ReactSlider className="my-slider" sliderLineColor="green" id="slider2" nativeSlider={false} min={50} max={100} step={1} value={this.state.value} onChange={this.onSliderChange} />
           <h4>Native slider when supported</h4>
           <ReactSlider min={50} max={100} step={1} value={this.state.value} onChange={this.onSliderChange} />
+          <h4>Slider with label and float to left</h4>
+          <label style={labelStyle} htmlFor="floatSlider">Float slider</label>
+          <div style={floatStyle}>
+            <ReactSlider thumbId="floatSlider" nativeSlider={false} min={50} max={100} step={1} value={this.state.value} onChange={this.onSliderChange} />
+          </div>
           <p>{this.state.value}</p>
           <p><button onClick={this.onClick}>OK</button></p>
         </div>

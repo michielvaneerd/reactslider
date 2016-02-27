@@ -21,7 +21,8 @@
   
   var nativeStyle = {
     display: "block",
-    width: "100%"
+    width: "100%",
+    margin: 0
   };
  
   var simpleClone = function() {
@@ -70,7 +71,8 @@
         nativeSlider : true,
         id : "",
         className : "react-slider-root",
-        sliderLineColor : "gray"
+        sliderLineColor : "gray",
+        thumbId : ""
       }
     },
     componentWillMount : function() {
@@ -227,15 +229,17 @@
         var me = this;
         return (
           <div className={this.props.className}
+            tabIndex={0}
             id={this.props.id}
+            onKeyDown={this.onKeyDown}
             style={rootStyle}
             ref="sliderRoot"
             onMouseDown={this.onMouseDown}>
             <div ref="sliderLine" className="react-slider-line" style={this.sliderLineStyle} />
             <button
+                id={this.props.thumbId}
+                tabIndex={-1}
                 className="react-slider-thumb"
-                autoFocus={true}
-                onKeyDown={this.onKeyDown}
                 ref="sliderThumb"
                 style={currentThumbStyle}
                 value={this.state.value} />
