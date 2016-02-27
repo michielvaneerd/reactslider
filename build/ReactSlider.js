@@ -90,6 +90,9 @@
     componentWillUnmount: function () {
       win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
       win.document.body.removeEventListener("mouseup", this.onBodyMouseUp);
+      if (this.refs.nativeInput) {
+        this.refs.nativeInput.removeEventListener("change", this.onNativeSliderChangeIE);
+      }
     },
     componentDidMount: function () {
       if (!this.state.nativeSlider) {
@@ -106,6 +109,16 @@
         this.refs.sliderLine.style.top = parseFloat(this.refs.sliderRoot.offsetHeight / 2 - this.refs.sliderLine.offsetHeight / 2) + "px";
         this.refs.sliderThumb.style.top = parseFloat(this.refs.sliderRoot.offsetHeight / 2 - this.refs.sliderThumb.offsetHeight / 2) + "px";
       }
+
+      // Native onChange event on input type=range:
+      // Only fires when vale has changed and after mouse up event / key up event.
+      // React onChange event on input type=range fires always! Except in IE10 and 11 never.
+      // So it's no problem if we set this native onChange event also for Edge / Chrome and Firefox
+      // because it will only fire once.
+      if (this.refs.nativeInput) {
+        this.refs.nativeInput.addEventListener("change", this.onNativeSliderChange);
+      }
+
       this.setState({
         value: this.state.value
       });
@@ -209,6 +222,7 @@
           "div",
           null,
           React.createElement("input", {
+            ref: "nativeInput",
             style: nativeStyle,
             className: this.props.className,
             id: this.props.id,
