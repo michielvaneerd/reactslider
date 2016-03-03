@@ -43,10 +43,6 @@
     offsetLeft : 0,
     offsetWidth : 0,
     halfStep : 0,
-    
-    onBodyMouseMove : function(e) {
-      this.onMouseMove(e);
-    },
     getInitialState : function() {
       return {
         value : parseInt(this.props.value),
@@ -57,11 +53,6 @@
       this.setState({
         value : nextProps.value ? parseInt(nextProps.value) : 0
       });
-    },
-    onBodyMouseUp : function(e) {
-      this.onMouseUp(e);
-      win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
-      win.document.body.removeEventListener("mouseup", this.onBodyMouseUp);
     },
     getDefaultProps : function() {
       return {
@@ -87,8 +78,8 @@
       this.sliderLineStyle = simpleClone(sliderLineStyle, {backgroundColor : this.props.sliderLineColor});
     },
     componentWillUnmount : function() {
-      win.document.body.removeEventListener("mousemove", this.onBodyMouseMove);
-      win.document.body.removeEventListener("mouseup", this.onBodyMouseUp);
+      win.document.body.removeEventListener("mousemove", this.onMouseMove);
+      win.document.body.removeEventListener("mouseup", this.onMouseUp);
       if (this.refs.nativeInput) {
         this.refs.nativeInput.removeEventListener("change", this.onNativeSliderChangeIE);
       }
@@ -128,14 +119,27 @@
       this.handleChange(e.target.value);
     },
     onMouseDown : function(e) {
-      var newValue = this.getNewValue(e.clientX);
-      this.setState({
-        started : true,
-        value : newValue
-      });
-      this.fireOnChange(newValue);
-      win.document.body.addEventListener("mousemove", this.onBodyMouseMove);
-      win.document.body.addEventListener("mouseup", this.onBodyMouseUp);
+      e.stopPropagation();
+      if ("changedTouches" in e) {
+        var newValue = this.getNewValue(e.changedTouches[0].clientX);
+        this.setState({
+          started : true,
+          value : newValue
+        });
+        this.fireOnChange(newValue);
+        win.document.body.addEventListener("touchmove", this.onTouchMove);
+        win.document.body.addEventListener("touchend", this.onTouchEnd);
+      } else {
+        var newValue = this.getNewValue(e.clientX);
+        this.setState({
+          started : true,
+          value : newValue
+        });
+        this.fireOnChange(newValue);
+        win.document.body.addEventListener("mousemove", this.onMouseMove);
+        win.document.body.addEventListener("mouseup", this.onMouseUp);
+      }
+      
     },
     handleChange : function(newValue) {
       this.setState({
@@ -183,8 +187,17 @@
       
     },
     onMouseMove : function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       if (this.state.started) {
         this.handleChange(this.getNewValue(e.clientX));
+      }
+    },
+    onTouchMove : function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (this.state.started && e.changedTouches) {
+        this.handleChange(this.getNewValue(e.changedTouches[0].clientX));
       }
     },
     fireOnChange : function(value) {
@@ -198,6 +211,17 @@
           started : false
         });
       }
+      win.document.body.removeEventListener("mousemove", this.onMouseMove);
+      win.document.body.removeEventListener("mouseup", this.onMouseUp);
+    },
+    onTouchEnd : function(e) {
+      if (this.state.started) {
+        this.setState({
+          started : false
+        });
+      }
+      win.document.body.removeEventListener("touchmove", this.onTouchMove);
+      win.document.body.removeEventListener("touchend", this.onTouchEnd);
     },
     onKeyDown : function(e) {
       var newValue = this.state.value;
@@ -248,6 +272,7 @@
             onKeyDown={this.onKeyDown}
             style={rootStyle}
             ref="sliderRoot"
+            onTouchStart={this.onMouseDown}
             onMouseDown={this.onMouseDown}>
             <div ref="sliderLine" className="react-slider-line" style={this.sliderLineStyle} />
             <button
