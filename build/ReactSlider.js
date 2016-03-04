@@ -70,12 +70,10 @@
     },
     componentWillMount: function () {
       if (this.props.nativeSlider) {
-
         var el = document.createElement("input");
         el.setAttribute("type", "range");
         this.setState({ nativeSlider: el.type === "range" });
       }
-
       this.sliderLineStyle = simpleClone(sliderLineStyle, { backgroundColor: this.props.sliderLineColor });
     },
     componentWillUnmount: function () {
@@ -180,7 +178,7 @@
         return newValue;
       }
 
-      return newValue;
+      return oldValue;
     },
     onMouseMove: function (e) {
       e.preventDefault();

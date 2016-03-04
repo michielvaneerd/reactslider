@@ -44,7 +44,7 @@
           null,
           "React Slider with some modifications"
         ),
-        React.createElement(ReactSlider, { className: "my-slider", sliderLineColor: "green", id: "slider2", nativeSlider: false, min: 50, max: 100, step: 1, value: this.state.value, onChange: this.onSliderChange }),
+        React.createElement(ReactSlider, { className: "my-slider", sliderLineColor: "green", id: "slider2", nativeSlider: false, min: 50, max: 100, step: 10, value: this.state.value, onChange: this.onSliderChange }),
         React.createElement(
           "h4",
           null,

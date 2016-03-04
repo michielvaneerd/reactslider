@@ -68,20 +68,19 @@
     },
     componentWillMount : function() {
       if (this.props.nativeSlider) {
-        
         var el = document.createElement("input");
         el.setAttribute("type", "range");
         this.setState({nativeSlider : el.type === "range"});
-        
       }
-      
-      this.sliderLineStyle = simpleClone(sliderLineStyle, {backgroundColor : this.props.sliderLineColor});
+      this.sliderLineStyle = simpleClone(sliderLineStyle,
+        {backgroundColor : this.props.sliderLineColor});
     },
     componentWillUnmount : function() {
       win.document.body.removeEventListener("mousemove", this.onMouseMove);
       win.document.body.removeEventListener("mouseup", this.onMouseUp);
       if (this.refs.nativeInput) {
-        this.refs.nativeInput.removeEventListener("change", this.onNativeSliderChangeIE);
+        this.refs.nativeInput.removeEventListener("change",
+          this.onNativeSliderChangeIE);
       }
     },
     componentDidMount : function() {
@@ -94,12 +93,13 @@
         }
         this.offsetLeft += this.refs.sliderThumb.offsetWidth / 2;
         
-        this.offsetWidth = parseFloat(this.refs.sliderRoot.offsetWidth - this.refs.sliderThumb.offsetWidth);
+        this.offsetWidth = parseFloat(this.refs.sliderRoot.offsetWidth
+          - this.refs.sliderThumb.offsetWidth);
         this.halfStep = Math.round(this.props.step / 2);
-        this.refs.sliderLine.style.top = parseFloat((this.refs.sliderRoot.offsetHeight / 2) - (this.refs.sliderLine.offsetHeight / 2))
-          + "px";
-        this.refs.sliderThumb.style.top = parseFloat((this.refs.sliderRoot.offsetHeight / 2) - (this.refs.sliderThumb.offsetHeight / 2))
-          + "px";
+        this.refs.sliderLine.style.top = parseFloat((this.refs.sliderRoot.offsetHeight / 2)
+          - (this.refs.sliderLine.offsetHeight / 2)) + "px";
+        this.refs.sliderThumb.style.top = parseFloat((this.refs.sliderRoot.offsetHeight / 2)
+          - (this.refs.sliderThumb.offsetHeight / 2)) + "px";
       }
       
       // Native onChange event on input type=range:
@@ -183,7 +183,7 @@
         return newValue;
       }
       
-      return newValue;
+      return oldValue;
       
     },
     onMouseMove : function(e) {
